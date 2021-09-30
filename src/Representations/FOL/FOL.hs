@@ -35,8 +35,6 @@ data FolTerm a where
   True_, False_ :: FolTerm Bool
   Forall, Exists :: Type a -> (FolTerm a -> FolTerm Bool) -> FolTerm Bool
   Equals :: FolTerm a -> FolTerm a -> FolTerm Bool
-  Ctx :: Gamma (FolTerm a) -> FolTerm (Gamma a)
-  Sel :: Context a FolTerm => FolTerm (Gamma a) -> FolTerm a
   Type :: Type a -> FolTerm Bool
 
 viewApp :: FolTerm a -> Maybe (String, [FOL.Value])
@@ -66,7 +64,7 @@ termToFol x = case viewApp x of
 -- | Instances
 
 -- | CCCs
-instance Lambda FolTerm where
+instance Closed FolTerm where
   app m n = case m of
               Lam t f -> f n
               _ -> App m n
@@ -117,10 +115,3 @@ instance KnownType a => HOL a FolTerm where
 
 instance Equality a FolTerm where
   equals = Equals
-
--- | Contexts
-instance Context a FolTerm where
-  type Gamma a = [a]
-  empty = Ctx []
-  upd m (Ctx c) = Ctx $ m:c
-  sel = Sel

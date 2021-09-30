@@ -13,11 +13,7 @@ copyright:           2021
 build-type:          Simple
 
 library 
-  exposed-modules: Representations.Algebraic
-                 , Representations.Representations
-                 , Representations.Bayesian.Bayesian
-                 , Representations.FOL.FOL
-                 , Fragment.Fragment
+  exposed-modules: Representations.Representations
   other-modules: Representations.Eval.Model
                  FOL.CNF
                  FOL.Connection

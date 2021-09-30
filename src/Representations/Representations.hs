@@ -1,24 +1,29 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Representations.Representations
   (
-    Lambda(..)
+    Closed(..)
   , Cartesian(..)
   , Constant(..)
   , Heyting(..)
   , HOL(..)
   , Equality(..)
-  , Context(..)
   , KnownType(..)
   , Type(..)
   , Var(..)
   ) where
 
+import GHC.Exts (Constraint)  
 import GHC.TypeLits
 import Representations.Eval.Model
 
@@ -64,7 +69,7 @@ instance Show (Type a) where
 --------------------------------------------------------------------------------
 -- | Algebras
 
-class Lambda repr where -- more often called "Closed"
+class Closed repr where -- more often called "Closed"
   app :: repr (a -> b) -> repr a -> repr b
   lam :: KnownType a => (repr a -> repr b) -> repr (a -> b)
 
@@ -87,14 +92,8 @@ class HOL a repr where
 class Equality a repr where
   equals :: repr a -> repr a -> repr Bool
 
-class Context a repr where
-  type Gamma a
-  empty :: repr (Gamma a)
-  upd :: repr a -> repr (Gamma a) -> repr (Gamma a)
-  sel :: repr (Gamma a) -> repr a
 
-
---------------------------------------------------------------------------------
+-- --------------------------------------------------------------------------------
 -- | Variables
 
 data Var = Var Char Int
