@@ -1,0 +1,36 @@
+cabal-version:       >=1.10
+name:                grove-bernardy-lenls18
+version:             0.1.0.0
+synopsis:            Code for Grove and Bernardy 2021.
+description:         Code for the paper 'Probabilistic compositional semantics, purely',
+                     presented at LENLS18 (https://lenls.github.io/lenls18/).
+                     Available at
+license:             MIT
+license-file:        LICENSE
+author:              Julian Grove and Jean-Philippe Bernardy
+maintainer:          julian.grove@gmail.com
+copyright:           2021
+build-type:          Simple
+
+library 
+  exposed-modules: Representations.Algebraic
+                 , Representations.Representations
+                 , Representations.Bayesian.Bayesian
+                 , Representations.FOL.FOL
+                 , Fragment.Fragment
+  other-modules: Representations.Eval.Model
+                 FOL.CNF
+                 FOL.Connection
+                 FOL.FOL
+                 FOL.Regularity
+                 FOL.Search
+                 FOL.Solver
+                 FOL.Tableau
+                 FOL.Unification
+  hs-source-dirs: src
+  build-depends: base
+               , mtl
+               , logict
+               , containers
+               , pretty
+  default-language: Haskell2010
