@@ -59,7 +59,7 @@ import Representations.Eval.Eval
 -- 0.8976999999999999( large )
 
 
--- | Degrees
+-- | Degree stuff
 
 theta_tall :: Constant Double "theta_tall" repr
            => repr Double
@@ -68,6 +68,14 @@ theta_tall = c @Double @"theta_tall"
 (≥) :: Constant (Double -> Double -> Bool) "≥" repr
     => repr (Double -> Double -> Bool)
 (≥) = c @(Double -> Double -> Bool) @"≥"
+
+
+-- | Measures
+
+height :: Constant (Entity -> Double) "height" repr
+       => repr (Entity -> Double)
+height = c @(Entity -> Double) @"height"
+
 
 -- | One-place predicates
 
@@ -91,6 +99,11 @@ happy :: Constant (Entity -> Bool) "happy" repr
       => repr (Entity -> Bool)
 happy = c @(Entity -> Bool) @"happy"
 
+person :: Constant (Entity -> Bool) "person" repr
+       => repr (Entity -> Bool)
+person = c @(Entity -> Bool) @"person"
+
+
 -- | Two-place predicates
 
 chase :: Constant (Entity -> Entity -> Bool) "chase" repr
@@ -104,6 +117,7 @@ catch = c @(Entity -> Entity -> Bool) @"catch"
 drank :: Constant (Entity -> Entity -> Bool) "drank" repr
       => repr (Entity -> Entity -> Bool)
 drank = c @(Entity -> Entity -> Bool) @"drank"
+
 
 -- | Names and definite descriptions
 
