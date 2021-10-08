@@ -13,8 +13,8 @@ copyright:           2021
 build-type:          Simple
 
 library 
-  exposed-modules: Representations.Eval.Model
-                   Representations.Fragment.Fragment
+  exposed-modules: Fragment.Fragment
+                   Representations.Eval.Model
   other-modules: ProbProg.Boolean
                  ProbProg.Gibbs
                  ProbProg.Histograms
