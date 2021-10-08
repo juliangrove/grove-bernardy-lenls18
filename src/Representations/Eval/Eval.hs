@@ -13,15 +13,23 @@
 
 module Representations.Eval.Eval
   (
-    TradI(..)
-  , ProbI(..)
+    AsType
   , Ctx(..)
+  , getProb
   , InCtx(..)
-  , AsType
+  , ProbI(..)
+  , ProbProg(..)
+  , runP
+  , TradI(..)
   ) where
 
-import GHC.TypeLits
 import Control.Monad
+import GHC.TypeLits
+import ProbProg.Gibbs
+import ProbProg.Logits
+import ProbProg.Histograms
+import ProbProg.PreciseProb
+import ProbProg.ProbLang
 import Representations.Eval.Model
 import Representations.Representations
 
@@ -51,9 +59,28 @@ instance InCtx t1 str k repr => InCtx t1 str (t2, k) repr where
 -- | The "probabilistic interpretation"
 newtype ProbI k a = ProbI { runProbI :: Ctx TradI k -> TradI a }
 
+-- | Probabilistic programs
+data ProbProg a
+  = PP { runPP :: (a -> P (Probabilistic Double)) -> P (Probabilistic Double) }
+  deriving Functor
+
+instance Applicative ProbProg where
+  pure = PP . flip ($)
+  (<*>) = ap
+
+instance Monad ProbProg where
+  (PP m) >>= k = PP $ \c -> m (\x -> runPP (k x) c)
+
+runP :: Int -> P (Probabilistic Double) -> Probabilistic Double
+runP n r = expectedValue <$> gibbs n r
+
+getProb :: Int -> ProbProg (Probabilistic Bool) -> Probabilistic Double
+getProb n phi = (/) <$> runP n (runPP phi indicator)
+                <*> runP n (runPP phi (pure . fmap (const 1)))
+
 
 --------------------------------------------------------------------------------
--- | Instances
+-- | Instances of representations
 
 -- | CCCs
 instance Closed TradI where
@@ -134,3 +161,14 @@ instance Finite a => HOL a TradI where
 instance HOL a TradI => HOL a (ProbI k) where
   forall f = ProbI $ forall . runProbI f
   exists f = ProbI $ exists . runProbI f
+
+-- | Interpreting the Probability DSL
+instance RealRepr (P (Probabilistic Double)) where
+  type REAL (P (Probabilistic Double)) = Probabilistic Double
+  type BOOL (P (Probabilistic Double)) = Probabilistic Bool
+  type Distr (P (Probabilistic Double)) = Distribution Double
+  integrate distr f = sample distr >>= f
+  mult m n = do x <- m
+                y <- n
+                pure ((*) <$> x <*> y)              
+  indicator = pure . fmap (\b -> if b then 1 else 0)

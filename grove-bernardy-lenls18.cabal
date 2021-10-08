@@ -13,8 +13,20 @@ copyright:           2021
 build-type:          Simple
 
 library 
-  exposed-modules: Representations.Representations
-  other-modules: Representations.Eval.Model
+  exposed-modules: Representations.Eval.Model
+                   Representations.Fragment.Fragment
+  other-modules: ProbProg.Boolean
+                 ProbProg.Gibbs
+                 ProbProg.Histograms
+                 ProbProg.Logits
+                 ProbProg.PreciseProb
+                 ProbProg.ProbLang
+                 Representations.Eval.Eval
+                 Representations.Representations
   hs-source-dirs: src
   build-depends: base
+               , containers
+               , gasp
+               , mwc-random
+               , statistics
   default-language: Haskell2010

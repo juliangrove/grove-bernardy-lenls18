@@ -34,7 +34,7 @@ catch' x y = (y == A 1 && x == A 4) || (y == A 2 && x == A 4)
 
 height' :: Entity -> Double
 height' x = case x of
-              (A 10) -> 75.846
+              (A 10) -> 75
               (A 11) -> 70
               (A 12) -> 69
               (A 13) -> 64

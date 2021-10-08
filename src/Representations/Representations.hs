@@ -3,6 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Representations.Representations
   (
@@ -11,6 +12,7 @@ module Representations.Representations
   , Constant(..)
   , Heyting(..)
   , HOL(..)
+  , RealRepr(..)
   ) where
 
 import GHC.TypeLits
@@ -39,3 +41,17 @@ class Heyting repr where
 
 class HOL a repr where
   forall, exists :: repr (a -> Bool) -> repr Bool
+
+
+--------------------------------------------------------------------------------
+-- | Probability DSL
+
+class RealRepr repr where
+  type REAL repr
+  type BOOL repr
+  type Distr repr
+  integrate :: Distr repr -> (REAL repr -> repr) -> repr
+  mult :: repr -> repr -> repr
+  indicator :: BOOL repr -> repr
+  observe :: BOOL repr -> repr -> repr
+  observe p m = mult (indicator p) m

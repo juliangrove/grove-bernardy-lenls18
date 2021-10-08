@@ -7,57 +7,57 @@
 
 module Fragment.Fragment where
 
-import Representations.Representations
-import Representations.Eval.Model
+import ProbProg.ProbLang
 import Representations.Eval.Eval
--- import Representations.Bayesian.Logits
--- import Representations.Bayesian.MCMC
+import Representations.Eval.Model
+import Representations.Representations
 
 
--- test
+--------------------------------------------------------------------------------
+-- | Example
 
--- | Normal distribution
--- normal :: Probabilistic Double
-        -- -> Probabilistic Double
-        -- -> P (Probabilistic Double)
--- normal mu sigma = P $ Sample (Gaussian mu sigma)
+-- | Probabilistic program representing a normal distribution
+normal :: Probabilistic Double
+       -> Probabilistic Double
+       -> ProbProg (Probabilistic Double)
+normal mu sigma = PP $ integrate (Gaussian mu sigma)
 
--- | "K" from paper
--- context :: P (Probabilistic
-              -- (Ctx TradI ((Entity -> Double, AsType "height"),
-                          -- ((Entity -> Bool, AsType "person"),
-                           -- ((Double -> Double -> Bool, AsType "≥"),
-                            -- ((Double, AsType "theta_tall"),
-                             -- ()))))))
--- context = normal (pure 72) (pure 3)
-  -- >>= \d -> pure (pure (\d' -> AddCon (TradI height')
-                         -- (AddCon (TradI human')
-                          -- (AddCon (TradI (>=))
-                           -- (AddCon (TradI d')
-                            -- Empty)))) <*> d)
+-- | HOL representation of 'someone is tall'
+someone_is_tall :: ProbI ((Entity -> Double, AsType "height"),
+                          ((Entity -> Bool, AsType "person"),
+                           ((Double -> Double -> Bool, AsType "≥"),
+                            ((Double, AsType "theta_tall"),
+                             ())))) Bool 
+someone_is_tall
+  = exists (lam $ \x -> app person x /\ app (app (≥) (app height x)) theta_tall)
 
--- | 'someone is tall'
--- ex :: ProbI ((Entity -> Double, AsType "height"),
-              -- ((Entity -> Bool, AsType "person"),
-                -- ((Double -> Double -> Bool, AsType "≥"),
-                  -- ((Double, AsType "theta_tall"),
-                    -- ())))) Bool 
--- ex = exists (lam $ \x -> app person x /\ app (app (≥) (app height x)) theta_tall)
+-- | A probabilistic program returning contexts s.t. 'theta_tall' is interpreted
+-- as a normal distribution with mean 72 and s.d. 3.
+context_pp :: ProbProg
+              (Probabilistic
+               (Ctx TradI ((Entity -> Double, AsType "height"),
+                           ((Entity -> Bool, AsType "person"),
+                            ((Double -> Double -> Bool, AsType "≥"),
+                             ((Double, AsType "theta_tall"),
+                              ()))))))
+context_pp = do d <- normal (pure 72) (pure 3)
+                pure (pure (\d' -> AddCon (TradI height')
+                                   (AddCon (TradI human')
+                                    (AddCon (TradI (>=))
+                                     (AddCon (TradI d')
+                                      Empty)))) <*> d)
 
--- | Evaluating 'someone is tall' in the context
--- program :: P (Probabilistic Bool)
--- program = fmap (fmap runTradI) $ context
-  -- >>= \k -> pure (pure (runProbI ex) <*> k)
+-- | Evaluate 'someone_is_tall' in the context of 'context_pp'
+someone_is_tall_pp :: ProbProg (Probabilistic Bool)
+someone_is_tall_pp = do k <- context_pp
+                        pure (runTradI . runProbI someone_is_tall <$> k)
+
+-- >>> getProb 500000 someone_is_tall_pp
+-- Prob {fromProb = 0.8412120000000143}
 
 
--- run :: Int -> P (Probabilistic Bool) -> IO Prob
--- run n phi = do
-  -- phi' <- mcmc n phi
-  -- return (trueProb phi')
-
--- >>> run 10000 program'
--- 0.8976999999999999( large )
-
+--------------------------------------------------------------------------------
+-- | Constants
 
 -- | Degree stuff
 

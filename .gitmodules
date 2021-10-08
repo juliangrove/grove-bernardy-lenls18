@@ -1,0 +1,3 @@
+[submodule "src/ProbProg"]
+	path = src/ProbProg
+	url = https://github.com/jyp/ProbProg
