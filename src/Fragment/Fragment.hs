@@ -7,14 +7,18 @@
 
 module Fragment.Fragment where
 
-import ProbProg.ProbLang
+import ProbProg.ProbLang (Distribution(..), Probabilistic)
 import Representations.Eval.Eval
 import Representations.Eval.Model
 import Representations.Representations
 
 
 --------------------------------------------------------------------------------
--- | Example
+-- | Examples
+
+-- | Factor the result by 1 or 0, as according to whether b is 'True' or 'False'
+observe' :: Probabilistic Bool -> ProbProg ()
+observe' b = PP $ \k -> observe b (k ())
 
 -- | Probabilistic program representing a normal distribution
 normal :: Probabilistic Double
@@ -49,11 +53,67 @@ context_pp = do d <- normal (pure 72) (pure 3)
 
 -- | Evaluate 'someone_is_tall' in the context of 'context_pp'
 someone_is_tall_pp :: ProbProg (Probabilistic Bool)
-someone_is_tall_pp = do k <- context_pp
-                        pure (runTradI . runProbI someone_is_tall <$> k)
-
+someone_is_tall_pp = do κ <- context_pp
+                        pure (runTradI . runProbI someone_is_tall <$> κ)
+                        
 -- >>> getProb 500000 someone_is_tall_pp
--- Prob {fromProb = 0.8412120000000143}
+-- Prob {fromProb = 0.8422000000000148}
+
+k0, k1 :: ProbProg
+          (Probabilistic
+            (Ctx TradI ((Entity, AsType "c"),
+                        ((Entity, AsType "m"),
+                         ((Entity, AsType "a"),
+                          ((Entity, AsType "v"),
+                           ((Entity -> Double, AsType "height"),
+                            ((Double -> Double -> Bool, AsType "≥"),
+                             ((Double, AsType "theta_tall"),
+                              ())))))))))
+k0 = do d <- normal (pure 68) (pure 3)
+        pure (pure (\d' -> AddCon (TradI ca)
+                           (AddCon (TradI m)
+                            (AddCon (TradI a)
+                             (AddCon (TradI v)
+                              (AddCon (TradI height'')
+                               (AddCon (TradI (>=))
+                                (AddCon (TradI d')
+                                 Empty))))))) <*> d)
+k1 = do κ <- k0
+        observe' (runTradI . runProbI
+                  ((app (app (≥) (app height camilla)) theta_tall) --> false) <$> κ)
+        observe' (runTradI . runProbI
+                  ((app (app (≥) (app height matt)) theta_tall) --> false) <$> κ)
+        observe' (runTradI . runProbI
+                  (app (app (≥) (app height anna)) theta_tall) <$> κ)
+        pure κ
+
+-- | HOL representation of 'Vlad is tall'
+vlad_is_tall :: ProbI ((Entity, AsType "c"),
+                       ((Entity, AsType "m"),
+                        ((Entity, AsType "a"),
+                         ((Entity, AsType "v"),
+                          ((Entity -> Double, AsType "height"),
+                           ((Double -> Double -> Bool, AsType "≥"),
+                            ((Double, AsType "theta_tall"),
+                             ()))))))) Bool
+vlad_is_tall
+  = app (app (≥) (app height vlad)) theta_tall
+
+-- | Evaluate 'vlad_is_tall' in the context of 'k0'
+vlad_is_tall_k0 :: ProbProg (Probabilistic Bool)
+vlad_is_tall_k0 = do κ <- k0
+                     pure (runTradI . runProbI vlad_is_tall <$> κ)
+
+-- >>> getProb 500000 vlad_is_tall_k0
+-- Prob {fromProb = 0.5002679999999994}
+
+-- | Evaluate 'vlad_is_tall' in the context of 'k1'
+vlad_is_tall_k1 :: ProbProg (Probabilistic Bool)
+vlad_is_tall_k1 = do κ <- k1
+                     pure (runTradI . runProbI vlad_is_tall <$> κ)
+
+-- >>> getProb 500000 vlad_is_tall_k1
+-- Prob {fromProb = 0.24114865814765057}
 
 
 --------------------------------------------------------------------------------
@@ -121,30 +181,18 @@ drank = c @(Entity -> Entity -> Bool) @"drank"
 
 -- | Names and definite descriptions
 
-amy :: Constant Entity "amy" repr
-    => repr Entity
-amy = c @Entity @"amy"
+camilla :: Constant Entity "c" repr
+        => repr Entity
+camilla = c @Entity @"c"
 
-ashley :: Constant Entity "ashley" repr
-       => repr Entity
-ashley = c @Entity @"ashley"
-
-emacs :: Constant Entity "emacs" repr
-      => repr Entity
-emacs = c @Entity @"emacs"
-
-matt :: Constant Entity "matt" repr
+matt :: Constant Entity "m" repr
      => repr Entity
-matt = c @Entity @"matt"
+matt = c @Entity @"m"
 
-jean_philippe :: Constant Entity "jean-philippe" repr
-              => repr Entity
-jean_philippe = c @Entity @"jean-philippe"
+anna :: Constant Entity "a" repr
+     => repr Entity
+anna = c @Entity @"a"
 
-julian :: Constant Entity "julian" repr
-       => repr Entity
-julian = c @Entity @"julian"
-
-stergios :: Constant Entity "stergios" repr
-         => repr Entity
-stergios = c @Entity @"stergios"
+vlad :: Constant Entity "v" repr
+     => repr Entity
+vlad = c @Entity @"v"

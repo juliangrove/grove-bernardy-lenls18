@@ -8,6 +8,14 @@ newtype Entity = A { getInt :: Int } deriving (Show, Eq, Enum)
 entities :: [Entity]
 entities = [A 0..A 100]
 
+-- | Individuals
+
+ca, m, a, v :: Entity
+ca = A 100
+m = A 101
+a = A 102
+v = A 103
+
 -- | Properties
 
 human' :: Entity -> Bool
@@ -40,3 +48,10 @@ height' x = case x of
               (A 13) -> 64
               (A 14) -> 66
               _ -> 69
+
+height'' :: Entity -> Double
+height'' x = case x of
+               (A 100) -> 65
+               (A 101) -> 67
+               (A 102) -> 72
+               (A 103) -> 68

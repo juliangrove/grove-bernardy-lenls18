@@ -8,7 +8,6 @@ in
 let
   ghc = pkgs.haskellPackages.ghcWithPackages (ps: with ps; ([
     cabal-install
-    # gasp
   ]));
 in
 pkgs.stdenv.mkDerivation {
